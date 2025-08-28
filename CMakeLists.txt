@@ -8,11 +8,29 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(GNUInstallDirs)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui)
+option(QDT_BUILD_DOCS "Build Doxygen docs" OFF)
+option(QDT_FORCE_SYSTEM_LIBZIP "Require system libzip; fail if missing" OFF)
+option(QDT_FORCE_FETCH_MINIZIP "Force FetchContent minizip-ng fallback" OFF)
+
 find_package(libzip QUIET)
 find_package(pugixml QUIET)
-if(libzip_FOUND)
+set(QDT_WITH_LIBZIP OFF)
+set(QDT_WITH_MINIZIP OFF)
+
+if(QDT_FORCE_SYSTEM_LIBZIP)
+    if(NOT libzip_FOUND)
+        message(FATAL_ERROR "QDT_FORCE_SYSTEM_LIBZIP=ON but libzip not found")
+    endif()
+endif()
+
+if(QDT_FORCE_FETCH_MINIZIP AND QDT_FORCE_SYSTEM_LIBZIP)
+    message(FATAL_ERROR "Can't force both system libzip and fetch minizip")
+endif()
+
+if(libzip_FOUND AND NOT QDT_FORCE_FETCH_MINIZIP)
     message(STATUS "Using system libzip")
     set(QTDOCTEMPLATE_USE_LIBZIP TRUE)
+    set(QDT_WITH_LIBZIP ON)
 else()
     include(FetchContent)
     # Minizip-ng fallback
@@ -29,6 +47,7 @@ else()
     set(MZ_BUILD_UNIT_TESTS OFF CACHE INTERNAL "")
     set(MZ_ZLIB ON CACHE INTERNAL "")
     FetchContent_MakeAvailable(minizip_ng)
+    set(QDT_WITH_MINIZIP ON)
 endif()
 
 if(pugixml_FOUND)
@@ -99,7 +118,9 @@ install(TARGETS QtDocxTemplate
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/QtDocxTemplate/Version.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/generated/QtDocxTemplate/Version.hpp @ONLY)
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/generated/QtDocxTemplate/Version.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/QtDocxTemplate)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
@@ -107,6 +128,8 @@ configure_package_config_file(
     ${CMAKE_CURRENT_BINARY_DIR}/QtDocxTemplateConfig.cmake
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/QtDocxTemplate
 )
+set(QDT_WITH_LIBZIP ${QDT_WITH_LIBZIP})
+set(QDT_WITH_MINIZIP ${QDT_WITH_MINIZIP})
 
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/QtDocxTemplateConfig.cmake
@@ -131,3 +154,21 @@ if(QTDOCTXTEMPLATE_BUILD_TESTS)
 endif()
 
 message(STATUS "Configured QtDocxTemplate ${PROJECT_VERSION}")
+
+# Uninstall target
+if(NOT TARGET uninstall)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake IMMEDIATE @ONLY)
+    add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif()
+
+# Docs
+if(QDT_BUILD_DOCS)
+    find_package(Doxygen REQUIRED)
+    if(DOXYGEN_FOUND)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+        add_custom_target(docs COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Generating API documentation with Doxygen")
+    endif()
+endif()

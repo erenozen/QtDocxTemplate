@@ -1,59 +1,119 @@
 # QtDocxTemplate (C++ / Qt 6) — Clean-room port of templ4docx
 
-Status: Initial scaffold (stubs). This library aims for 1:1 feature parity with the Java project jsolve/templ4docx (version 2.0.2) — no extra features beyond its documented capabilities.
+![CI](https://github.com/erenozen/QtDocxTemplate/actions/workflows/ci.yml/badge.svg)
+![Sanitizers](https://github.com/erenozen/QtDocxTemplate/actions/workflows/sanitizers.yml/badge.svg)
+![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
 
-## High-level Goal
-Provide a Qt 6 / C++ API to fill DOCX templates by replacing text variables, inserting images, bullet lists, and table data, mirroring the original Java API.
+Clean-room (Apache-2.0) reimplementation of the Java library jsolve/templ4docx (v2.0.2). Intentional parity: text, image, bullet list, and table variable expansion in the main document part. No extra features beyond upstream scope.
 
-## Public API (planned)
-```
-using namespace QtDocxTemplate;
-Docx docx("template.docx");
-docx.setVariablePattern(VariablePattern{"${","}"});
-Variables vars;
-vars.add(std::make_shared<TextVariable>("${firstname}", "Lukasz"));
-vars.add(std::make_shared<TextVariable>("${lastname}", "Stypka"));
-docx.fillTemplate(vars);
-docx.save("output.docx");
-```
-
-Additional supported variable types (parity with templ4docx):
-- TextVariable (style preserved)
-- ImageVariable (pixels → EMU @ 96 DPI)
-- BulletListVariable (list of text or images)
-- TableVariable (column-wise lists, row replication)
-
-Utility methods (parity with blog examples):
-- `readTextContent()`
-- `findVariables()`
-
-## Build
+## Quick Start
 ```bash
-cmake -S . -B build
-cmake --build build
-ctest --test-dir build
+cmake -S . -B build -DQTDOCTXTEMPLATE_BUILD_TESTS=ON
+cmake --build build -j
+ctest --test-dir build -V
 ```
 
-## Install
+Install & consume:
 ```bash
-cmake --install build --prefix /desired/prefix
+cmake --install build --prefix /tmp/qdt-prefix
 ```
-Then consume via:
 ```cmake
 find_package(QtDocxTemplate CONFIG REQUIRED)
-target_link_libraries(myapp PRIVATE QtDocxTemplate::core)
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE QtDocxTemplate::core Qt6::Core Qt6::Gui)
 ```
 
-## Implementation Phases (TODO)
-- Phase A: OPC package (zip) handling (minizip/libzip)
-- Phase B: XML layer (pugixml)
-- Phase C: Run model (split runs awareness)
-- Phase D: Replacers (text, image, bullet list, table)
-- Phase E: Docx façade logic
-- Phase F: Examples & tests with real .docx fixtures
+## Minimal Usage
+```cpp
+using namespace QtDocxTemplate;
+Docx doc("template.docx");
+Variables vars;
+vars.add(std::make_shared<TextVariable>("${firstname}", "Lukasz"));
+vars.add(std::make_shared<TextVariable>("${lastname}",  "Stypka"));
+doc.fillTemplate(vars);
+doc.save("output.docx");
+```
 
-## Scope Guardrails
-Parity only. Do not add features beyond templ4docx (e.g., headers/footers advanced traversal, hyperlinks, etc.).
+## Variable Types
+- TextVariable (style preserved, run fragmentation neutral)
+- ImageVariable (pixels → EMU @ 96 DPI)
+- BulletListVariable (list of text items)
+- TableVariable (column-wise lists; row replication)
 
-## License
-Apache-2.0 (clean-room reimplementation). Original Java project remains separately licensed under Apache-2.0.
+Utility helpers: `Docx::readTextContent()`, `Docx::findVariables()`.
+
+## Extended Examples
+
+Custom pattern:
+```cpp
+doc.setVariablePattern({"#{","}"});
+vars.add(std::make_shared<TextVariable>("#{city}", "Berlin"));
+```
+
+Image insertion:
+```cpp
+QImage logo(80,80,QImage::Format_ARGB32); logo.fill(Qt::red);
+vars.add(std::make_shared<ImageVariable>("${logo}", logo, 80, 80));
+```
+
+Bullet list:
+```cpp
+auto bl = std::make_shared<BulletListVariable>("${skills}");
+bl->addItem(std::make_shared<TextVariable>("${i1}", "C++"));
+bl->addItem(std::make_shared<TextVariable>("${i2}", "Qt"));
+vars.add(bl);
+```
+
+Table (4 columns: name, age, avatar image, skills bullet list):
+```cpp
+TableVariable table("${students}");
+// columns are parallel vectors of VariablePtr (same length)
+std::vector<VariablePtr> colName { TV("${n1}", "Alice"), TV("${n2}", "Bob") };
+std::vector<VariablePtr> colAge  { TV("${a1}", "30"),    TV("${a2}", "25") };
+QImage avatar(32,32,QImage::Format_ARGB32); avatar.fill(Qt::blue);
+std::vector<VariablePtr> colImg  { IV("${i1}", avatar,32,32), IV("${i2}", avatar,32,32) };
+auto mkSkills = [](QString a, QString b){
+	auto bl = std::make_shared<BulletListVariable>("${skills}");
+	bl->addItem(std::make_shared<TextVariable>("${k1}", a));
+	bl->addItem(std::make_shared<TextVariable>("${k2}", b));
+	return std::static_pointer_cast<Variable>(bl);
+};
+std::vector<VariablePtr> colSkills { mkSkills("C++","Qt"), mkSkills("Python","Docs") };
+table.addColumn(colName); table.addColumn(colAge); table.addColumn(colImg); table.addColumn(colSkills);
+vars.add(std::make_shared<TableVariable>(table));
+```
+Helper aliases for brevity (user-defined):
+```cpp
+auto TV = [](QString key, QString v){ return std::make_shared<TextVariable>(key, v); };
+auto IV = [&](QString key, const QImage &img, int w, int h){ return std::make_shared<ImageVariable>(key, img, w, h); };
+```
+
+## Build Options
+| Option | Default | Description |
+|--------|---------|-------------|
+| QDT_FORCE_SYSTEM_LIBZIP | OFF | Require system libzip or fail |
+| QDT_FORCE_FETCH_MINIZIP | OFF | Force FetchContent minizip-ng |
+| QDT_BUILD_DOCS | OFF | Build Doxygen docs target `docs` |
+| QTDOCTXTEMPLATE_BUILD_TESTS | ON | Build tests (ctest) |
+| QTDOCTXTEMPLATE_BUILD_EXAMPLES | ON | Build examples |
+
+Feature flags exported in `QtDocxTemplateConfig.cmake`:
+`QtDocxTemplate_WITH_LIBZIP`, `QtDocxTemplate_WITH_MINIZIP`.
+
+## Style & Replacement Semantics (Parity Rules)
+- Variable detection spans run boundaries; duplicates deduped in `findVariables()`.
+- Replacement preserves leading/trailing whitespace and first run styling.
+- Non-text (images) inserted structurally (not aggregated into surrounding text runs).
+- Table replication uses the first row under the table variable cell as a template.
+
+## Roadmap / Non-Goals
+Strict parity first. Out of scope (for now): headers/footers, numbering overrides, hyperlinks, advanced drawing objects, nested tables beyond simple row replication.
+
+## Contributing
+See CONTRIBUTING.md.
+
+## License & Notices
+Apache-2.0. See LICENSE and THIRD_PARTY_NOTICES.md. This project is independent from the original Java implementation.
+
+## Parity Statement
+Behavior limited intentionally to templ4docx scope; deviations are treated as bugs unless mandated by platform differences (Qt / C++ specifics).
