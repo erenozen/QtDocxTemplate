@@ -8,13 +8,14 @@
 
 namespace QtDocxTemplate {
 
-// Forward declarations of internal components (clean-room implementation)
+// Forward declarations & internal includes (clean-room implementation)
 namespace opc { class Package; }
 namespace xml { class XmlPart; }
 
 class QTDOCTXTEMPLATE_EXPORT Docx {
 public:
     explicit Docx(QString templatePath);
+    ~Docx();
 
     void setVariablePattern(const VariablePattern &pattern);
     QString readTextContent() const; // TODO Phase E implementation
@@ -25,7 +26,9 @@ public:
 private:
     QString m_templatePath;
     VariablePattern m_pattern;
-    // TODO store internal model / parsed document once implemented
+    mutable std::shared_ptr<opc::Package> m_package; // OPC container (shared_ptr works with incomplete type)
+    mutable bool m_openAttempted{false};
+    bool ensureOpened() const; // lazy open helper
 };
 
 } // namespace QtDocxTemplate

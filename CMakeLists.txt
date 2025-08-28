@@ -8,6 +8,27 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(GNUInstallDirs)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui)
+find_package(libzip QUIET)
+if(libzip_FOUND)
+    message(STATUS "Using system libzip")
+    set(QTDOCTEMPLATE_USE_LIBZIP TRUE)
+else()
+    include(FetchContent)
+    # Minizip-ng fallback
+    if(NOT DEFINED MINIZIP_NG_TAG)
+        set(MINIZIP_NG_TAG 4.0.4) # reasonable stable tag
+    endif()
+    set(MZ_OPENSSL OFF CACHE INTERNAL "")
+    FetchContent_Declare(minizip_ng
+        GIT_REPOSITORY https://github.com/nmoinvaz/minizip.git
+        GIT_TAG ${MINIZIP_NG_TAG}
+    )
+    set(MZ_BUILD_TESTS OFF CACHE INTERNAL "")
+    set(MZ_BUILD_EXAMPLES OFF CACHE INTERNAL "")
+    set(MZ_BUILD_UNIT_TESTS OFF CACHE INTERNAL "")
+    set(MZ_ZLIB ON CACHE INTERNAL "")
+    FetchContent_MakeAvailable(minizip_ng)
+endif()
 
 add_library(QtDocxTemplate
     src/Docx.cpp
@@ -40,9 +61,17 @@ target_link_libraries(QtDocxTemplate
     PUBLIC
         Qt6::Core
         Qt6::Gui
+    PRIVATE
+        $<$<BOOL:${QTDOCTEMPLATE_USE_LIBZIP}>:libzip::zip>
+    $<$<NOT:$<BOOL:${QTDOCTEMPLATE_USE_LIBZIP}>>:MINIZIP::minizip>
 )
 
 target_compile_definitions(QtDocxTemplate PRIVATE QTDOCTEMPLATE_BUILD_LIB)
+if(QTDOCTEMPLATE_USE_LIBZIP)
+    target_compile_definitions(QtDocxTemplate PRIVATE QTDOCTEMPLATE_USE_LIBZIP=1)
+else()
+    target_compile_definitions(QtDocxTemplate PRIVATE QTDOCTEMPLATE_USE_MINIZIP=1)
+endif()
 
 install(TARGETS QtDocxTemplate
     EXPORT QtDocxTemplateTargets
