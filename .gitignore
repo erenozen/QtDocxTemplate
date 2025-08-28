@@ -1,0 +1,22 @@
+# Build artifacts
+build/
+*.o
+*.obj
+*.pdb
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# Qt Creator / CLion / VSCode configs
+.idea/
+.vscode/
+CMakeCache.txt
+CMakeFiles/
+Testing/
+compile_commands.json
+
+# Misc
+*.user
+*.DS_Store

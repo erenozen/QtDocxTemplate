@@ -1,0 +1,3 @@
+add_executable(qtdocxtemplate_tests test_main.cpp)
+target_link_libraries(qtdocxtemplate_tests PRIVATE QtDocxTemplate::core)
+add_test(NAME qtdocxtemplate_smoke COMMAND qtdocxtemplate_tests)
