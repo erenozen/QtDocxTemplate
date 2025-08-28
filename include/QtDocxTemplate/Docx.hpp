@@ -1,3 +1,7 @@
+/** \file Docx.hpp
+ *  Public façade for loading a DOCX template and performing variable replacement.
+ *  Parity scope: main document part (word/document.xml) only. Unknown placeholders are left untouched.
+ */
 #pragma once
 #include "QtDocxTemplate/Export.hpp"
 #include "QtDocxTemplate/VariablePattern.hpp"
@@ -13,16 +17,25 @@ namespace QtDocxTemplate {
 namespace opc { class Package; }
 namespace xml { class XmlPart; }
 
+/** Main API entry. Load a template, configure pattern, replace variables, and save.
+ *  Thread-safety: instances are not thread-safe. One instance per document.
+ */
 class QTDOCTXTEMPLATE_EXPORT Docx {
 public:
+    /** Construct with path to an existing .docx template. No I/O until first operation. */
     explicit Docx(QString templatePath);
     ~Docx();
 
+    /** Override variable pattern (default ${ .. }). */
     void setVariablePattern(const VariablePattern &pattern);
-    QString readTextContent() const; // TODO Phase E implementation
-    QStringList findVariables() const; // TODO Phase E implementation
-    void fillTemplate(const Variables &variables); // TODO Phase E implementation
-    void save(const QString &outputPath) const; // TODO Phase E implementation
+    /** Return paragraph-joined plain text of the main document (paragraphs separated by \n). */
+    QString readTextContent() const; // paragraphs joined by '\n'
+    /** Non-greedy scan for placeholders matching prefix+suffix. Spans across run boundaries. Deduplicated, order of first appearance. */
+    QStringList findVariables() const;
+    /** Perform in-place substitution for provided variables (text, image, bullet list, table). Unknown placeholders remain. */
+    void fillTemplate(const Variables &variables);
+    /** Write resulting package to disk (zip). */
+    void save(const QString &outputPath) const;
 
 private:
     QString m_templatePath;
@@ -33,8 +46,8 @@ private:
     bool ensureOpened() const; // lazy open helper
     bool ensureDocumentLoaded() const; // load word/document.xml once
 
-    // Cached raw text lines of paragraphs (for findVariables re-use)
-    QString readFullTextCache() const; // builds paragraph-joined text
+    // Build paragraph-joined text (implementation detail shared by readTextContent & findVariables)
+    QString readFullTextCache() const;
 };
 
 } // namespace QtDocxTemplate
