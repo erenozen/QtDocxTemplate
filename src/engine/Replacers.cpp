@@ -35,27 +35,27 @@ void Replacers::replaceText(pugi::xml_document &doc,
 	for(auto &n : pnodes) {
 		pugi::xml_node p = n.node();
 		RunModel rm; rm.build(p);
-		const QString &paraText = rm.text();
+		QString paraText = rm.text();
 		if(paraText.isEmpty()) continue;
 		QRegularExpression re(QRegularExpression::escape(prefix)+"(.*?)"+QRegularExpression::escape(suffix));
 		auto it = re.globalMatch(paraText);
 		struct Match { int s; int e; QString token; };
-		std::vector<Match> matches; matches.reserve(4);
+		std::vector<Match> matches;
 		while(it.hasNext()) {
 			auto m = it.next();
 			QString token = m.captured(0);
-			if(!map.count(token)) continue; // unknown -> skip
-			matches.push_back({m.capturedStart(0), m.capturedEnd(0), token});
+			if(!map.count(token)) continue; // skip unknown
+			matches.push_back({(int)m.capturedStart(0), (int)m.capturedEnd(0), token});
 		}
 		if(matches.empty()) continue;
-		// Descending order to keep offsets valid relative to original mapping
-		for(auto i = (int)matches.size()-1; i>=0; --i) {
-			auto &mm = matches[i];
+		std::sort(matches.begin(), matches.end(), [](const Match &a,const Match &b){ return a.s > b.s; });
+		for(const auto &mm : matches) {
 			QString replacement = map[mm.token];
 			rm.replaceRange(mm.s, mm.e, [&](pugi::xml_node w_p, pugi::xml_node styleR){
 				auto newRun = RunModel::makeTextRun(w_p, styleR, replacement, true);
 				return std::vector<pugi::xml_node>{ newRun };
 			});
+			rm.build(p); // rebuild after each replacement
 		}
 	}
 }

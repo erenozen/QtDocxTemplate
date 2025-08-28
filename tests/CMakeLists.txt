@@ -16,3 +16,8 @@ add_executable(text_replace_test text_replace_test.cpp)
 target_include_directories(text_replace_test PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/_deps/pugixml-src/src)
 target_link_libraries(text_replace_test PRIVATE QtDocxTemplate::core Qt6::Core)
 add_test(NAME qtdocxtemplate_text_replace COMMAND text_replace_test)
+
+add_executable(text_replace_edge_test text_replace_edge_test.cpp)
+target_include_directories(text_replace_edge_test PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/_deps/pugixml-src/src)
+target_link_libraries(text_replace_edge_test PRIVATE QtDocxTemplate::core Qt6::Core Qt6::Gui)
+add_test(NAME qtdocxtemplate_text_replace_edges COMMAND text_replace_edge_test)
