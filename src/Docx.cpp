@@ -2,6 +2,8 @@
 #include <QFile>
 #include "opc/Package.hpp"
 #include "xml/XmlPart.hpp"
+#include "engine/Replacers.hpp"
+#include "QtDocxTemplate/Variables.hpp"
 #include <QRegularExpression>
 
 namespace QtDocxTemplate {
@@ -85,9 +87,17 @@ QStringList Docx::findVariables() const {
 }
 
 void Docx::fillTemplate(const Variables &variables) {
-    Q_UNUSED(variables);
-    // Phase A: only ensure package is opened. No replacements yet.
-    ensureOpened();
+    if(!ensureOpened()) return;
+    // Load document.xml
+    auto dataOpt = m_package->readPart("word/document.xml");
+    if(!dataOpt) return; // nothing to do
+    xml::XmlPart part;
+    if(!part.load(*dataOpt)) return;
+    // Perform text replacements (Phase C)
+    engine::Replacers::replaceText(part.doc(), m_pattern.prefix, m_pattern.suffix, variables);
+    // Save back
+    QByteArray out = part.save();
+    m_package->writePart("word/document.xml", out);
 }
 
 void Docx::save(const QString &outputPath) const {
