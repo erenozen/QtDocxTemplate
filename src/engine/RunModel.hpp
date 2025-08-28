@@ -21,6 +21,9 @@ public:
 
     void replaceRange(int start, int end,
                       std::function<std::vector<pugi::xml_node>(pugi::xml_node w_p, pugi::xml_node styleR)> makeRuns);
+    // Structural variant used for non-text replacements (images) that must insert raw runs
+    void replaceRangeStructural(int start, int end,
+                                std::function<std::vector<pugi::xml_node>(pugi::xml_node w_p, pugi::xml_node styleR)> makeRuns);
 
     static pugi::xml_node cloneRunShallow(pugi::xml_node r);
     static pugi::xml_node makeTextRun(pugi::xml_node w_p, pugi::xml_node styleR, const QString &text, bool preserveSpace=true);

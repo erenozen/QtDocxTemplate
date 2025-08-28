@@ -2,6 +2,7 @@
 #include <QString>
 #include <pugixml.hpp>
 #include "QtDocxTemplate/Variables.hpp"
+#include "opc/Package.hpp"
 
 namespace QtDocxTemplate { namespace engine {
 
@@ -11,9 +12,15 @@ struct Replacers {
                             const QString &prefix,
                             const QString &suffix,
                             const ::QtDocxTemplate::Variables &vars);
-    static void replaceImage(/* args TBD */) { /* TODO */ }
-    static void replaceBulletList(/* args TBD */) { /* TODO */ }
-    static void replaceTable(/* args TBD */) { /* TODO */ }
+    static void replaceImages(pugi::xml_document &doc, opc::Package &pkg,
+                              const QString &prefix, const QString &suffix,
+                              const ::QtDocxTemplate::Variables &vars);
+    static void replaceBulletLists(pugi::xml_document &doc,
+                                   const QString &prefix, const QString &suffix,
+                                   const ::QtDocxTemplate::Variables &vars);
+    static void replaceTables(pugi::xml_document &doc, opc::Package &pkg,
+                              const QString &prefix, const QString &suffix,
+                              const ::QtDocxTemplate::Variables &vars);
 };
 
 }} // namespace QtDocxTemplate::engine

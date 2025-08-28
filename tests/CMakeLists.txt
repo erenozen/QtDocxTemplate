@@ -21,3 +21,18 @@ add_executable(text_replace_edge_test text_replace_edge_test.cpp)
 target_include_directories(text_replace_edge_test PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/_deps/pugixml-src/src)
 target_link_libraries(text_replace_edge_test PRIVATE QtDocxTemplate::core Qt6::Core Qt6::Gui)
 add_test(NAME qtdocxtemplate_text_replace_edges COMMAND text_replace_edge_test)
+
+add_executable(image_replace_test image_replace_test.cpp)
+target_include_directories(image_replace_test PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/_deps/pugixml-src/src)
+target_link_libraries(image_replace_test QtDocxTemplate::core)
+add_test(NAME qtdocxtemplate_image_replace COMMAND image_replace_test)
+
+add_executable(bullet_replace_test bullet_replace_test.cpp)
+target_include_directories(bullet_replace_test PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/_deps/pugixml-src/src)
+target_link_libraries(bullet_replace_test QtDocxTemplate::core)
+add_test(NAME qtdocxtemplate_bullet_replace COMMAND bullet_replace_test)
+
+add_executable(table_replace_test table_replace_test.cpp)
+target_include_directories(table_replace_test PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/_deps/pugixml-src/src)
+target_link_libraries(table_replace_test QtDocxTemplate::core)
+add_test(NAME qtdocxtemplate_table_replace COMMAND table_replace_test)

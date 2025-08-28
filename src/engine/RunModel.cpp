@@ -61,6 +61,44 @@ pugi::xml_node RunModel::makeTextRun(pugi::xml_node w_p, pugi::xml_node styleR, 
 	return newR;
 }
 
+void RunModel::replaceRangeStructural(int start, int end,
+								std::function<std::vector<pugi::xml_node>(pugi::xml_node w_p, pugi::xml_node styleR)> makeRuns) {
+	if(start >= end) return; if(start < 0) start = 0; if(end > m_text.size()) end = m_text.size(); if(start >= end) return;
+	int firstIdx=-1, lastIdx=-1; for(int i=0;i<(int)m_spans.size();++i){ const auto &sp=m_spans[i]; if(sp.start + sp.len <= start) continue; if(sp.start >= end) break; if(firstIdx==-1) firstIdx=i; lastIdx=i; }
+	if(firstIdx==-1) return; auto firstSpan = m_spans[firstIdx]; auto lastSpan = m_spans[lastIdx]; bool single = (firstSpan.t == lastSpan.t);
+	pugi::xml_node w_p = firstSpan.r.parent(); pugi::xml_node styleR = styleSourceRun(start,end); if(!styleR) styleR = firstSpan.r;
+	int firstOff = start - firstSpan.start; int lastOff = end - lastSpan.start;
+	if(single) {
+		QString full = QString::fromUtf8(firstSpan.t.text().get()); QString left = full.left(firstOff); QString right = full.mid(lastOff);
+		pugi::xml_node anchor = firstSpan.r; // we'll remove
+		// insert left segment before anchor if any
+		if(!left.isEmpty()) {
+			pugi::xml_node l = RunModel::makeTextRun(w_p, styleR, left, true);
+			w_p.insert_copy_before(l, anchor); w_p.remove_child(l);
+		}
+		// insert new runs
+		auto newRuns = makeRuns(w_p, styleR);
+		for(auto r : newRuns) { if(!r) continue; w_p.insert_copy_before(r, anchor); w_p.remove_child(r); }
+		// insert right segment
+		if(!right.isEmpty()) {
+			pugi::xml_node rSeg = RunModel::makeTextRun(w_p, styleR, right, true);
+			w_p.insert_copy_before(rSeg, anchor); w_p.remove_child(rSeg);
+		}
+		if(anchor.parent()) anchor.parent().remove_child(anchor);
+		return;
+	}
+	// multi span: collapse to single anchor after building left+new+right then remove covered runs
+	QString firstText = QString::fromUtf8(firstSpan.t.text().get()); QString lastText = QString::fromUtf8(lastSpan.t.text().get());
+	QString leftKeep = firstText.left(firstOff); QString rightKeep = lastText.mid(lastOff);
+	pugi::xml_node anchor = firstSpan.r;
+	if(!leftKeep.isEmpty()) { auto l=RunModel::makeTextRun(w_p, styleR, leftKeep, true); w_p.insert_copy_before(l, anchor); w_p.remove_child(l);} 
+	auto newRuns = makeRuns(w_p, styleR); for(auto r : newRuns){ if(r){ w_p.insert_copy_before(r, anchor); w_p.remove_child(r);} }
+	if(!rightKeep.isEmpty()) { auto rr=RunModel::makeTextRun(w_p, styleR, rightKeep, true); w_p.insert_copy_before(rr, anchor); w_p.remove_child(rr);} 
+	// remove covered runs
+	std::vector<pugi::xml_node> toRemove; for(pugi::xml_node r=firstSpan.r; r; r=r.next_sibling()){ toRemove.push_back(r); if(r==lastSpan.r) break; }
+	for(auto r : toRemove) if(r.parent()) r.parent().remove_child(r);
+}
+
 void RunModel::replaceRange(int start, int end,
 							std::function<std::vector<pugi::xml_node>(pugi::xml_node w_p, pugi::xml_node styleR)> makeRuns) {
 	if(start >= end) return;

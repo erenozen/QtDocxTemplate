@@ -93,8 +93,11 @@ void Docx::fillTemplate(const Variables &variables) {
     if(!dataOpt) return; // nothing to do
     xml::XmlPart part;
     if(!part.load(*dataOpt)) return;
-    // Perform text replacements (Phase C)
+    // Perform replacements (text first, then images, bullet lists, tables)
     engine::Replacers::replaceText(part.doc(), m_pattern.prefix, m_pattern.suffix, variables);
+    engine::Replacers::replaceImages(part.doc(), *m_package, m_pattern.prefix, m_pattern.suffix, variables);
+    engine::Replacers::replaceBulletLists(part.doc(), m_pattern.prefix, m_pattern.suffix, variables);
+    engine::Replacers::replaceTables(part.doc(), *m_package, m_pattern.prefix, m_pattern.suffix, variables);
     // Save back
     QByteArray out = part.save();
     m_package->writePart("word/document.xml", out);
