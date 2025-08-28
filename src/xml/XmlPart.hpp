@@ -1,16 +1,21 @@
 #pragma once
 #include <QString>
 #include <QByteArray>
+#include <vector>
+#include <pugixml.hpp>
 
 namespace QtDocxTemplate { namespace xml {
 
 // TODO Phase B: Wrap pugixml document, provide namespace registrations and helpers
 class XmlPart {
 public:
-    bool load(const QByteArray &data); // parse
-    QByteArray serialize() const; // to bytes
-    QString textContent() const; // flatten visible text
-    // Additional helper methods will be added in later phases
+    bool load(const QByteArray &data); // parse; false on failure
+    QByteArray save() const;           // serialize UTF-8 with XML decl
+    std::vector<pugi::xml_node> selectAll(const char* xpath) const; // basic xpath queries
+    pugi::xml_document & doc() { return m_doc; }
+    const pugi::xml_document & doc() const { return m_doc; }
+private:
+    pugi::xml_document m_doc;
 };
 
 }} // namespace QtDocxTemplate::xml

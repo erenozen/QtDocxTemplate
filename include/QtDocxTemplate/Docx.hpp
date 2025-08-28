@@ -5,6 +5,7 @@
 #include <QString>
 #include <QStringList>
 #include <memory>
+#include <optional>
 
 namespace QtDocxTemplate {
 
@@ -28,7 +29,12 @@ private:
     VariablePattern m_pattern;
     mutable std::shared_ptr<opc::Package> m_package; // OPC container (shared_ptr works with incomplete type)
     mutable bool m_openAttempted{false};
+    mutable bool m_documentLoaded{false};
     bool ensureOpened() const; // lazy open helper
+    bool ensureDocumentLoaded() const; // load word/document.xml once
+
+    // Cached raw text lines of paragraphs (for findVariables re-use)
+    QString readFullTextCache() const; // builds paragraph-joined text
 };
 
 } // namespace QtDocxTemplate

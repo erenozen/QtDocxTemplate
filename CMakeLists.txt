@@ -9,6 +9,7 @@ include(GNUInstallDirs)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui)
 find_package(libzip QUIET)
+find_package(pugixml QUIET)
 if(libzip_FOUND)
     message(STATUS "Using system libzip")
     set(QTDOCTEMPLATE_USE_LIBZIP TRUE)
@@ -28,6 +29,22 @@ else()
     set(MZ_BUILD_UNIT_TESTS OFF CACHE INTERNAL "")
     set(MZ_ZLIB ON CACHE INTERNAL "")
     FetchContent_MakeAvailable(minizip_ng)
+endif()
+
+if(pugixml_FOUND)
+    message(STATUS "Using system pugixml")
+else()
+    include(FetchContent)
+    if(NOT pugixml_POPULATED)
+        FetchContent_Declare(pugixml
+            GIT_REPOSITORY https://github.com/zeux/pugixml.git
+            GIT_TAG v1.14
+        )
+        FetchContent_MakeAvailable(pugixml)
+    endif()
+    if(NOT TARGET pugixml::pugixml AND TARGET pugixml)
+        add_library(pugixml::pugixml ALIAS pugixml)
+    endif()
 endif()
 
 add_library(QtDocxTemplate
@@ -64,6 +81,7 @@ target_link_libraries(QtDocxTemplate
     PRIVATE
         $<$<BOOL:${QTDOCTEMPLATE_USE_LIBZIP}>:libzip::zip>
     $<$<NOT:$<BOOL:${QTDOCTEMPLATE_USE_LIBZIP}>>:MINIZIP::minizip>
+    pugixml::pugixml
 )
 
 target_compile_definitions(QtDocxTemplate PRIVATE QTDOCTEMPLATE_BUILD_LIB)

@@ -1,6 +1,8 @@
 #include "QtDocxTemplate/Docx.hpp"
 #include <QFile>
 #include "opc/Package.hpp"
+#include "xml/XmlPart.hpp"
+#include <QRegularExpression>
 
 namespace QtDocxTemplate {
 
@@ -15,6 +17,39 @@ bool Docx::ensureOpened() const {
     return true;
 }
 
+bool Docx::ensureDocumentLoaded() const {
+    if(!ensureOpened()) return false;
+    if(m_documentLoaded) return true;
+    // Lazy include of XmlPart header structure: we can't forward declare internal storage, so we store in a lambda-local static.
+    // For now we parse on demand each call to readTextContent; simple implementation (Phase B scope).
+    return true;
+}
+
+QString Docx::readFullTextCache() const {
+    if(!ensureOpened()) return {};
+    // Load document.xml
+    auto dataOpt = m_package->readPart("word/document.xml");
+    if(!dataOpt) return {};
+    xml::XmlPart part;
+    if(!part.load(*dataOpt)) return {};
+    QStringList paragraphLines;
+    auto paragraphs = part.selectAll("//w:p");
+    for(const auto &p : paragraphs) {
+        QString paraText;
+        // Collect all descendant w:t in order
+        pugi::xpath_query textQuery(".//w:t");
+        auto ts = textQuery.evaluate_node_set(p);
+        for(const auto &tn : ts) {
+            pugi::xml_node node = tn.node();
+            // Respect xml:space="preserve" (we just take text as-is)
+            QString t = QString::fromUtf8(node.text().get());
+            paraText += t;
+        }
+        paragraphLines << paraText;
+    }
+    return paragraphLines.join('\n');
+}
+
 Docx::Docx(QString templatePath)
     : m_templatePath(std::move(templatePath)) {}
 
@@ -25,13 +60,28 @@ void Docx::setVariablePattern(const VariablePattern &pattern) {
 }
 
 QString Docx::readTextContent() const {
-    // TODO Phase E: extract visible text from document.xml
-    return {};
+    return readFullTextCache();
 }
 
 QStringList Docx::findVariables() const {
-    // TODO Phase E: scan runs for variable patterns
-    return {};
+    QString text = readFullTextCache();
+    if(text.isEmpty()) return {};
+    // Escape prefix/suffix for regex
+    auto esc = [](const QString &s){ return QRegularExpression::escape(s); };
+    QString pattern = esc(m_pattern.prefix) + "(.*?)" + esc(m_pattern.suffix); // non-greedy capture
+    QRegularExpression re(pattern);
+    QRegularExpressionMatchIterator it = re.globalMatch(text);
+    QStringList found;
+    QSet<QString> seen;
+    while(it.hasNext()) {
+        auto m = it.next();
+        QString full = m.captured(0);
+        if(!seen.contains(full)) {
+            seen.insert(full);
+            found << full;
+        }
+    }
+    return found;
 }
 
 void Docx::fillTemplate(const Variables &variables) {
