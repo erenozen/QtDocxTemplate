@@ -28,8 +28,8 @@ target_link_libraries(app PRIVATE QtDocxTemplate::core Qt6::Core Qt6::Gui)
 using namespace QtDocxTemplate;
 Docx doc("template.docx");
 Variables vars;
-vars.add(std::make_shared<TextVariable>("${firstname}", "Lukasz"));
-vars.add(std::make_shared<TextVariable>("${lastname}",  "Stypka"));
+vars.add(std::make_shared<TextVariable>("${firstname}", "Eren"));
+vars.add(std::make_shared<TextVariable>("${lastname}",  "Ozen"));
 doc.fillTemplate(vars);
 doc.save("output.docx");
 ```
