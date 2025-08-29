@@ -2,7 +2,6 @@
 build/
 build-docs/
 install/
-docs/
 *.o
 *.obj
 *.pdb
