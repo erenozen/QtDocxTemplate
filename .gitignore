@@ -1,5 +1,8 @@
 # Build artifacts
 build/
+build-docs/
+install/
+docs/
 *.o
 *.obj
 *.pdb
@@ -16,6 +19,7 @@ CMakeCache.txt
 CMakeFiles/
 Testing/
 compile_commands.json
+generated/
 
 # Misc
 *.user
