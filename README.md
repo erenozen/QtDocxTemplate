@@ -1,7 +1,5 @@
 # QtDocxTemplate (C++ / Qt 6)
 
-![CI](https://github.com/erenozen/QtDocxTemplate/actions/workflows/ci.yml/badge.svg)
-![Sanitizers](https://github.com/erenozen/QtDocxTemplate/actions/workflows/sanitizers.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
 
 A comprehensive C++ library for DOCX template processing and variable replacement. Supports text, image, bullet list, and table variable expansion in document templates.
