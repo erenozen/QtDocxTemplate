@@ -109,11 +109,5 @@ Feature flags exported in `QtDocxTemplateConfig.cmake`:
 ## Roadmap / Non-Goals
 Feature-complete template processing for common use cases. Out of scope (for now): headers/footers, numbering overrides, hyperlinks, advanced drawing objects, nested tables beyond simple row replication.
 
-## Contributing
-See CONTRIBUTING.md.
-
 ## License & Notices
-Apache-2.0. See LICENSE and THIRD_PARTY_NOTICES.md. This project is an independent implementation.
-
-## Design Principles
-Comprehensive feature set with consistent behavior across all variable types. The library maintains document formatting and structure while providing flexible template processing capabilities.
+Apache-2.0. See LICENSE. This project is an independent implementation.
