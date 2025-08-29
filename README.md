@@ -88,6 +88,22 @@ auto TV = [](QString key, QString v){ return std::make_shared<TextVariable>(key,
 auto IV = [&](QString key, const QImage &img, int w, int h){ return std::make_shared<ImageVariable>(key, img, w, h); };
 ```
 
+## Dependencies
+
+QtDocxTemplate has minimal external dependencies with smart fallbacks:
+
+| Component | License | Purpose | Acquisition |
+|-----------|---------|---------|-------------|
+| **Qt 6** (Core, Gui) | LGPL-3.0 | Core framework, XML/image processing | System package (required) |
+| **pugixml** | MIT | Fast XML parsing and DOM manipulation | System package or auto-downloaded |
+| **libzip** | BSD-3-Clause | ZIP archive handling (preferred) | System package or falls back to minizip-ng |
+| **minizip-ng** | Zlib | ZIP archive handling (fallback) | Auto-downloaded if libzip unavailable |
+
+**Smart Dependency Resolution:**
+- Prefers system-installed libraries when available
+- Automatically downloads missing dependencies via CMake FetchContent
+- Configurable via build options for enterprise environments
+
 ## Build Options
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -110,4 +126,6 @@ Feature flags exported in `QtDocxTemplateConfig.cmake`:
 Feature-complete template processing for common use cases. Out of scope (for now): headers/footers, numbering overrides, hyperlinks, advanced drawing objects, nested tables beyond simple row replication.
 
 ## License & Notices
-Apache-2.0. See LICENSE. This project is an independent implementation.
+Apache-2.0. See LICENSE and THIRD_PARTY_NOTICES.md. This project is an independent implementation.
+
+**Third-Party Licenses:** All dependencies are compatible with commercial use. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for complete license information.
