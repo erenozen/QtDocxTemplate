@@ -24,6 +24,6 @@ fi
 echo
 echo "Next steps to tag v1.0.0:"
 echo " git add -A && git commit -m 'chore: release v1.0.0'"
-echo " git tag -a v1.0.0 -m 'QtDocxTemplate v1.0.0 — parity-only port of templ4docx'"
+echo " git tag -a v1.0.0 -m 'QtDocxTemplate v1.0.0 — Full-featured DOCX template library'"
 echo " git push && git push --tags"
 echo "Optional GitHub release: gh release create v1.0.0 --title 'QtDocxTemplate v1.0.0' --notes-file CHANGELOG.md --generate-notes"

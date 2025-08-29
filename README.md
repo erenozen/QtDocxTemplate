@@ -1,10 +1,10 @@
-# QtDocxTemplate (C++ / Qt 6) — Clean-room port of templ4docx
+# QtDocxTemplate (C++ / Qt 6)
 
 ![CI](https://github.com/erenozen/QtDocxTemplate/actions/workflows/ci.yml/badge.svg)
 ![Sanitizers](https://github.com/erenozen/QtDocxTemplate/actions/workflows/sanitizers.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
 
-Clean-room (Apache-2.0) reimplementation of the Java library jsolve/templ4docx (v2.0.2). Intentional parity: text, image, bullet list, and table variable expansion in the main document part. No extra features beyond upstream scope.
+A comprehensive C++ library for DOCX template processing and variable replacement. Supports text, image, bullet list, and table variable expansion in document templates.
 
 ## Quick Start
 ```bash
@@ -107,13 +107,13 @@ Feature flags exported in `QtDocxTemplateConfig.cmake`:
 - Table replication uses the first row under the table variable cell as a template.
 
 ## Roadmap / Non-Goals
-Strict parity first. Out of scope (for now): headers/footers, numbering overrides, hyperlinks, advanced drawing objects, nested tables beyond simple row replication.
+Feature-complete template processing for common use cases. Out of scope (for now): headers/footers, numbering overrides, hyperlinks, advanced drawing objects, nested tables beyond simple row replication.
 
 ## Contributing
 See CONTRIBUTING.md.
 
 ## License & Notices
-Apache-2.0. See LICENSE and THIRD_PARTY_NOTICES.md. This project is independent from the original Java implementation.
+Apache-2.0. See LICENSE and THIRD_PARTY_NOTICES.md. This project is an independent implementation.
 
-## Parity Statement
-Behavior limited intentionally to templ4docx scope; deviations are treated as bugs unless mandated by platform differences (Qt / C++ specifics).
+## Design Principles
+Comprehensive feature set with consistent behavior across all variable types. The library maintains document formatting and structure while providing flexible template processing capabilities.

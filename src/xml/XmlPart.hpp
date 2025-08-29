@@ -6,7 +6,7 @@
 
 namespace QtDocxTemplate { namespace xml {
 
-// TODO Phase B: Wrap pugixml document, provide namespace registrations and helpers
+// XML document wrapper providing namespace handling and XPath queries
 class XmlPart {
 public:
     bool load(const QByteArray &data); // parse; false on failure

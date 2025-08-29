@@ -1,6 +1,6 @@
 /** \file Docx.hpp
  *  Public façade for loading a DOCX template and performing variable replacement.
- *  Parity scope: main document part (word/document.xml) only. Unknown placeholders are left untouched.
+ *  Processing scope: main document part (word/document.xml) only. Unknown placeholders are left untouched.
  */
 #pragma once
 #include "QtDocxTemplate/Export.hpp"
@@ -13,7 +13,7 @@
 
 namespace QtDocxTemplate {
 
-// Forward declarations & internal includes (clean-room implementation)
+// Forward declarations & internal includes
 namespace opc { class Package; }
 namespace xml { class XmlPart; }
 

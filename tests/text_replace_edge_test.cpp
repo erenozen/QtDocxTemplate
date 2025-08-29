@@ -1,4 +1,4 @@
-// Edge text replacement tests (Phase C parity) – no framework, use asserts
+// Edge text replacement tests – no framework, use asserts
 #include "QtDocxTemplate/Docx.hpp"
 #include "QtDocxTemplate/Variables.hpp"
 #include "QtDocxTemplate/TextVariable.hpp"

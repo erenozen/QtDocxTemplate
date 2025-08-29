@@ -23,7 +23,7 @@ bool Docx::ensureDocumentLoaded() const {
     if(!ensureOpened()) return false;
     if(m_documentLoaded) return true;
     // Lazy include of XmlPart header structure: we can't forward declare internal storage, so we store in a lambda-local static.
-    // For now we parse on demand each call to readTextContent; simple implementation (Phase B scope).
+    // For now we parse on demand each call to readTextContent; simple implementation approach.
     return true;
 }
 

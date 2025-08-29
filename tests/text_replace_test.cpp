@@ -1,4 +1,4 @@
-// Standalone assert-based test (no gtest dependency) similar to other phase tests
+// Standalone assert-based test (no gtest dependency) for text replacement functionality
 #include "QtDocxTemplate/Docx.hpp"
 #include "QtDocxTemplate/Variables.hpp"
 #include "QtDocxTemplate/TextVariable.hpp"

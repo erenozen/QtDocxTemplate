@@ -6,7 +6,7 @@
 
 namespace QtDocxTemplate { namespace engine {
 
-// TODO Phase D: Implement replacers for text, image, bullet list, table
+// Variable replacement engine for text, image, bullet list, and table processing
 struct Replacers {
     static void replaceText(pugi::xml_document &doc,
                             const QString &prefix,

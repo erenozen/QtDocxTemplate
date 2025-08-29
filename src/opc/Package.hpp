@@ -7,9 +7,9 @@
 
 namespace QtDocxTemplate { namespace opc {
 
-// TODO Phase A: Implement minimal OPC package handling using minizip/libzip
-// Simple in-memory representation of a DOCX OPC package (ZIP) providing parity-level
-// operations required for later replacement phases. Not a full OPC implementation.
+// Minimal OPC package handling using minizip/libzip
+// Simple in-memory representation of a DOCX OPC package (ZIP) providing
+// operations required for template processing. Focused implementation for DOCX files.
 class Package {
 public:
     bool open(const QString &path);              // Load .docx (ZIP) into memory map
