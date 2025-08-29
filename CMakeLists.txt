@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(QtDocxTemplate VERSION 0.1.0 LANGUAGES CXX)
+project(QtDocxTemplate VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,8 +14,6 @@ option(QDT_FORCE_FETCH_MINIZIP "Force FetchContent minizip-ng fallback" OFF)
 
 find_package(libzip QUIET)
 find_package(pugixml QUIET)
-set(QDT_WITH_LIBZIP OFF)
-set(QDT_WITH_MINIZIP OFF)
 
 if(QDT_FORCE_SYSTEM_LIBZIP)
     if(NOT libzip_FOUND)
@@ -30,7 +28,6 @@ endif()
 if(libzip_FOUND AND NOT QDT_FORCE_FETCH_MINIZIP)
     message(STATUS "Using system libzip")
     set(QTDOCTEMPLATE_USE_LIBZIP TRUE)
-    set(QDT_WITH_LIBZIP ON)
 else()
     include(FetchContent)
     # Minizip-ng fallback
@@ -47,7 +44,6 @@ else()
     set(MZ_BUILD_UNIT_TESTS OFF CACHE INTERNAL "")
     set(MZ_ZLIB ON CACHE INTERNAL "")
     FetchContent_MakeAvailable(minizip_ng)
-    set(QDT_WITH_MINIZIP ON)
 endif()
 
 if(pugixml_FOUND)
@@ -118,8 +114,21 @@ install(TARGETS QtDocxTemplate
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/QtDocxTemplate/Version.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/generated/QtDocxTemplate/Version.hpp @ONLY)
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# Determine and export backend feature flags right before generating config
+set(QDT_WITH_LIBZIP OFF)
+set(QDT_WITH_MINIZIP OFF)
+if(TARGET libzip::zip)
+    set(QDT_WITH_LIBZIP ON)
+elseif(TARGET MINIZIP::minizip)
+    set(QDT_WITH_MINIZIP ON)
+elseif(TARGET minizip::minizip)
+    set(QDT_WITH_MINIZIP ON)
+endif()
+
+# Configure version header (generated)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/QtDocxTemplate/Version.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/generated/QtDocxTemplate/Version.hpp @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/generated/QtDocxTemplate/Version.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/QtDocxTemplate)
 
 include(CMakePackageConfigHelpers)
@@ -128,8 +137,6 @@ configure_package_config_file(
     ${CMAKE_CURRENT_BINARY_DIR}/QtDocxTemplateConfig.cmake
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/QtDocxTemplate
 )
-set(QDT_WITH_LIBZIP ${QDT_WITH_LIBZIP})
-set(QDT_WITH_MINIZIP ${QDT_WITH_MINIZIP})
 
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/QtDocxTemplateConfig.cmake

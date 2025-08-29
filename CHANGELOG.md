@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.0] - 2025-08-29
+Parity-only port of jsolve/templ4docx.
+
+Features: text, image, bullet list, table replacements; configurable VariablePattern; main document part only.
+Run-aware replacements with style preserved from first overlapped run.
+Packaging: CMake config package; libzip or minizip backend exported via feature flags; CI matrix, sanitizers, docs check.
+
+No public API changes planned for further parity maintenance releases.
+
 ## [0.1.0] - Unreleased
 ### Added
 - Initial implementation: package handling (libzip / minizip-ng fallback)

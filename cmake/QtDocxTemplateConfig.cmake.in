@@ -1,9 +1,8 @@
 @PACKAGE_INIT@
+set(QtDocxTemplate_WITH_LIBZIP @QDT_WITH_LIBZIP@)
+set(QtDocxTemplate_WITH_MINIZIP @QDT_WITH_MINIZIP@)
 
 include(CMakeFindDependencyMacro)
 find_dependency(Qt6 REQUIRED COMPONENTS Core Gui)
 
 include("${CMAKE_CURRENT_LIST_DIR}/QtDocxTemplateTargets.cmake")
-
-set(QtDocxTemplate_WITH_LIBZIP @QDT_WITH_LIBZIP@)
-set(QtDocxTemplate_WITH_MINIZIP @QDT_WITH_MINIZIP@)
